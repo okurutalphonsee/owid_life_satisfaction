@@ -18,6 +18,7 @@ h1 {
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Load packages 
+library(pacman)
 if(!require(pacman)) install.packages("pacman")
 pacman::p_load(plotly, tidyverse, reactable, here)
 ```
@@ -25,7 +26,7 @@ pacman::p_load(plotly, tidyverse, reactable, here)
 ```{r}
 ## Import data
 cantril <- 
-  read_csv(here("data/happiness-cantril-ladder.csv")) %>% 
+  read_csv(here("data/happiness-wvs-vs-gallup.csv")) %>% 
   rename(Country = Entity)
 ```
 
@@ -42,6 +43,7 @@ cantril %>%
   select(Country, `2011`, `2022`) %>% 
   mutate(`Absolute change` = round(`2022` - `2011`, 3)) %>% 
   mutate(`Relative change` = (`2022` - `2011`) / `2011`) %>% 
+  filter(!is.na(`2011`)) %>% 
   reactable(
     columns = list(`Relative change` = colDef(format = colFormat(percent = TRUE, digits = 1))) 
   )
@@ -69,18 +71,24 @@ cantril %>%
 ```{r}
 # simple line chart of the data, for five countries on different continents (ggplot, piped into ggplotly)
 
+gap_years <- seq(2010,2022.5,2.5)
+
 cantril_chart <- 
   cantril %>% 
   filter(Country %in% c("Norway", "Australia", "Germany", "Bolivia", "Colombia", "Bhutan")) %>%
+  filter(!(is.na(`Cantril ladder score`))) %>% 
+  arrange(- `Cantril ladder score`) %>% 
   ggplot(aes(x = Year, y = `Cantril ladder score`, color = Country)) +
   geom_line() +
   scale_y_continuous(limits = c(0, 10)) +
+  scale_x_continuous(breaks = gap_years)+
   labs(x = NULL,
        y = NULL, 
        color = NULL) +
   theme_minimal() 
 
 ggplotly(cantril_chart, width = 940)
+
 ```
 
 ## Advanced (Optional) 📈
@@ -127,7 +135,7 @@ function filter_default() {
 }
 window.onload = filter_default;
 </script>
-
+read_csv(here("data/"))
 
 # {.unlisted}
 
